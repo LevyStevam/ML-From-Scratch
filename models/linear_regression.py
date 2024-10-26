@@ -1,10 +1,21 @@
-from models.model import Model
 import numpy as np
+from typing import List
+
+from models.model import Model
+
 
 class LinearRegression(Model):
     """A simple linear regression model.
     """
-    def __init__(self, device: str, endpoint: str):
+    def __init__(self, w0: float = 0.0, w1: float = 0.0):
+        """Initializes the model with the given parameters.
+
+        Args:
+            w0 (float): the intercept of the model.
+            w1 (float): the slope of the model.
+        """
+        self.w0 = w0
+        self.w1 = w1
         pass
     
     def predict(self, input_array: np.ndarray, **kwargs) -> List[str]:
@@ -15,15 +26,35 @@ class LinearRegression(Model):
             representing a batch of inputs.
 
         Returns:
-            List[str]: the predicted output for each input.
+            List[float]: the predicted output for each input.
         """
-        pass
-    
-    def fit(self, training_data: np.ndarray, validation_data: np.ndarray, **kwargs):
+        predictions = []
+        
+        for feature in input_array:
+            y_pred = self.w0 + self.w1 * feature
+            predictions.append(y_pred)
+        
+        return predictions
+
+    def fit(self, X_train: np.ndarray, y_train: np.ndarray, epochs: int, learning_rate: float):
         """Trains the model using the given training and validation data.
 
         Args:
             training_data (np.ndarray): the training production.
             validation_data (np.ndarray): the validation production.
+            epochs (int): the number of epochs to train the model.
+            learning_rate (float): the learning rate for the gradient descent algorithm.
         """
-        pass
+        for _ in range(epochs):
+            error_w0 = 0.0
+            error_w1 = 0.0
+
+            for feature, label in zip(X_train, y_train):
+                y_pred = self.w0 + self.w1 * feature
+                error_w0 += (y_pred - label)
+                error_w1 += (y_pred - label) * feature
+
+            self.w0 = self.w0 - learning_rate*1/len(X_train)*error_w0
+            self.w1 = self.w1 - learning_rate*1/len(X_train)*error_w1
+
+        return
