@@ -4,8 +4,8 @@ from typing import List
 from models.model import Model
 
 
-class LinearRegression(Model):
-    """A simple linear regression model.
+class LinearRegressionSGD(Model):
+    """A simple linear regression model, using stochastic gradient descent to train the model.
     """
     def __init__(self, w0: float = 0.0, w1: float = 0.0):
         """Initializes the model with the given parameters.
@@ -46,15 +46,24 @@ class LinearRegression(Model):
             learning_rate (float): the learning rate for the gradient descent algorithm.
         """
         for _ in range(epochs):
-            error_w0 = 0.0
-            error_w1 = 0.0
-
-            for feature, label in zip(X_train, y_train):
+            
+            for feature, y_true in zip(X_train, y_train):
                 y_pred = self.w0 + self.w1 * feature
-                error_w0 += (y_pred - label)
-                error_w1 += (y_pred - label) * feature
-
-            self.w0 = self.w0 - learning_rate*1/len(X_train)*error_w0
-            self.w1 = self.w1 - learning_rate*1/len(X_train)*error_w1
-
+                error = y_true - y_pred
+                
+                self.w0 += learning_rate * error
+                self.w1 += learning_rate * error * feature
         return
+
+    def mse(self, y_train: np.ndarray, y_pred: np.ndarray) -> float:
+        """Calculates the mean squared error between the predicted and actual values.
+
+        Args:
+            y_train (np.ndarray): the actual values.
+            y_pred (np.ndarray): the predicted values.
+
+        Returns:
+            float: the mean squared error between the predicted and actual values.
+        """
+        mse = np.mean((y_train - y_pred)**2)
+        return mse
