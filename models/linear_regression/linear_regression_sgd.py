@@ -36,7 +36,7 @@ class LinearRegressionSGD(Model):
         
         return predictions
 
-    def fit(self, X_train: np.ndarray, y_train: np.ndarray, epochs: int, learning_rate: float):
+    def fit(self, X: np.ndarray, y: np.ndarray, epochs: int, learning_rate: float):
         """Trains the model using the given training and validation data.
 
         Args:
@@ -47,7 +47,7 @@ class LinearRegressionSGD(Model):
         """
         for _ in range(epochs):
             
-            for feature, y_true in zip(X_train, y_train):
+            for feature, y_true in zip(X, y):
                 y_pred = self.w0 + self.w1 * feature
                 error = y_true - y_pred
                 
