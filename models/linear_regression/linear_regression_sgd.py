@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from typing import List
+from sklearn.utils import shuffle
 
 from models.model import Model
 
@@ -49,6 +50,7 @@ class LinearRegressionSGD(Model):
         """
         mse_history = [] 
         for _ in range(epochs):
+            X, y = shuffle(X, y)
             
             for feature, y_true in zip(X, y):
                 y_pred = self.w0 + self.w1 * feature
@@ -63,17 +65,17 @@ class LinearRegressionSGD(Model):
         if plot_learning_curve:
             self.__plot_learning_curve(mse_history, epochs)
 
-    def mse(self, y_train: np.ndarray, y_pred: np.ndarray) -> float:
+    def mse(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         """Calculates the mean squared error between the predicted and actual values.
 
         Args:
-            y_train (np.ndarray): the actual values.
+            y_true (np.ndarray): the actual values.
             y_pred (np.ndarray): the predicted values.
 
         Returns:
             float: the mean squared error between the predicted and actual values.
         """
-        mse = np.mean((y_train - y_pred)**2)
+        mse = np.mean((y_true - y_pred)**2)
         return mse
     
     def __plot_learning_curve(self, mse_history: List[float], epochs: int):

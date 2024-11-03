@@ -66,17 +66,17 @@ class LinearRegressionGD(Model):
         if plot_learning_curve:
             self.__plot_learning_curve(mse_history)
 
-    def mse(self, y_train: np.ndarray, y_pred: np.ndarray) -> float:
+    def mse(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         """Calculates the mean squared error between the predicted and actual values.
 
         Args:
-            y_train (np.ndarray): the actual values.
+            y_true (np.ndarray): the actual values.
             y_pred (np.ndarray): the predicted values.
 
         Returns:
             float: the mean squared error between the predicted and actual values.
         """
-        mse = np.mean((y_train - y_pred)**2)
+        mse = np.mean((y_true - y_pred)**2)
         return mse
 
     def __plot_learning_curve(self, mse_history: List[float]):
