@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+
 from typing import List
 
 from models.model import Model
@@ -36,7 +38,7 @@ class LinearRegressionSGD(Model):
         
         return predictions
 
-    def fit(self, X: np.ndarray, y: np.ndarray, epochs: int, learning_rate: float):
+    def fit(self, X: np.ndarray, y: np.ndarray, epochs: int, learning_rate: float, plot_learning_curve: bool = False):
         """Trains the model using the given training and validation data.
 
         Args:
@@ -45,6 +47,7 @@ class LinearRegressionSGD(Model):
             epochs (int): the number of epochs to train the model.
             learning_rate (float): the learning rate for the gradient descent algorithm.
         """
+        mse_history = [] 
         for _ in range(epochs):
             
             for feature, y_true in zip(X, y):
@@ -53,7 +56,12 @@ class LinearRegressionSGD(Model):
                 
                 self.w0 += learning_rate * error
                 self.w1 += learning_rate * error * feature
-        return
+
+                y_pred = self.predict(X)
+                mse_history.append(self.mse(y, np.array(y_pred)))
+            
+        if plot_learning_curve:
+            self.__plot_learning_curve(mse_history, epochs)
 
     def mse(self, y_train: np.ndarray, y_pred: np.ndarray) -> float:
         """Calculates the mean squared error between the predicted and actual values.
@@ -67,3 +75,17 @@ class LinearRegressionSGD(Model):
         """
         mse = np.mean((y_train - y_pred)**2)
         return mse
+    
+    def __plot_learning_curve(self, mse_history: List[float], epochs: int):
+        
+        """Plota a curva de aprendizado invertida para mostrar a parte estável na parte inferior.
+        
+        Args:
+            mse_history (List[float]): List of MSE values recorded during training.
+        """
+        plt.plot(mse_history)
+        plt.xlabel("Atualização dos pesos")
+        plt.ylabel("MSE")
+        plt.title("Curva de Aprendizado")
+        plt.gca().invert_yaxis()  
+        plt.show()

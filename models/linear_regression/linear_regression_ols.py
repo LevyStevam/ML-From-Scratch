@@ -5,7 +5,7 @@ from models.model import Model
 
 
 class LinearRegressionOLS(Model):
-    """A simple linear regression model, using stochastic gradient descent to train the model.
+    """A simple linear regression model, using the Ordinary Least Squares (OLS) algorithm.
     """
     def __init__(self):
         self.w = None

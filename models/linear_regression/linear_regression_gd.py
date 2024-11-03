@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from typing import List
 
 from models.model import Model
@@ -16,9 +17,8 @@ class LinearRegressionGD(Model):
         """
         self.w0 = w0
         self.w1 = w1
-        pass
-    
-    def predict(self, input_array: np.ndarray, **kwargs) -> List[str]:
+
+    def predict(self, input_array: np.ndarray, **kwargs) -> List[float]:
         """Returns the model's prediction for the given input.
 
         Args:
@@ -36,15 +36,18 @@ class LinearRegressionGD(Model):
         
         return predictions
 
-    def fit(self, X_train: np.ndarray, y_train: np.ndarray, epochs: int, learning_rate: float):
+    def fit(self, X_train: np.ndarray, y_train: np.ndarray, epochs: int, learning_rate: float, plot_learning_curve: bool = False):
         """Trains the model using the given training and validation data.
 
         Args:
-            training_data (np.ndarray): the training production.
-            validation_data (np.ndarray): the validation production.
+            X_train (np.ndarray): the training production.
+            y_train (np.ndarray): the validation production.
             epochs (int): the number of epochs to train the model.
             learning_rate (float): the learning rate for the gradient descent algorithm.
+            plot_learning_curve (bool): if True, plots the learning curve at the end of training.
         """
+        mse_history = []  
+
         for _ in range(epochs):
             error_w0 = 0.0
             error_w1 = 0.0
@@ -54,11 +57,15 @@ class LinearRegressionGD(Model):
                 error_w0 += (y_true - y_pred)
                 error_w1 += (y_true - y_pred) * feature
 
-            self.w0 = self.w0 + learning_rate*1/len(X_train)*error_w0
-            self.w1 = self.w1 + learning_rate*1/len(X_train)*error_w1
+            self.w0 += learning_rate * error_w0 / len(X_train)
+            self.w1 += learning_rate * error_w1 / len(X_train)
 
-        return
-    
+            y_pred = self.predict(X_train)
+            mse_history.append(self.mse(y_train, np.array(y_pred)))
+
+        if plot_learning_curve:
+            self.__plot_learning_curve(mse_history)
+
     def mse(self, y_train: np.ndarray, y_pred: np.ndarray) -> float:
         """Calculates the mean squared error between the predicted and actual values.
 
@@ -71,3 +78,17 @@ class LinearRegressionGD(Model):
         """
         mse = np.mean((y_train - y_pred)**2)
         return mse
+
+    def __plot_learning_curve(self, mse_history: List[float]):
+        
+        """Plota a curva de aprendizado invertida para mostrar a parte estável na parte inferior.
+        
+        Args:
+            mse_history (List[float]): List of MSE values recorded during training.
+        """
+        plt.plot(mse_history)
+        plt.xlabel("Épocas")
+        plt.ylabel("MSE")
+        plt.title("Curva de Aprendizado")
+        plt.gca().invert_yaxis()  
+        plt.show()
