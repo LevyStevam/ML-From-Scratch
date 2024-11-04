@@ -10,15 +10,16 @@ from models.model import Model
 class LinearRegressionSGD(Model):
     """A simple linear regression model, using stochastic gradient descent to train the model.
     """
-    def __init__(self, w0: float = 0.0, w1: float = 0.0):
+    def __init__(self):
         """Initializes the model with the given parameters.
 
         Args:
             w0 (float): the intercept of the model.
             w1 (float): the slope of the model.
         """
-        self.w0 = w0
-        self.w1 = w1
+        self.w0 = 0
+        self.w1 = 0
+        self.mse_history = [] 
         pass
     
     def predict(self, input_array: np.ndarray, **kwargs) -> List[str]:
@@ -48,7 +49,7 @@ class LinearRegressionSGD(Model):
             epochs (int): the number of epochs to train the model.
             learning_rate (float): the learning rate for the gradient descent algorithm.
         """
-        mse_history = [] 
+
         for _ in range(epochs):
             X, y = shuffle(X, y)
             
@@ -56,38 +57,24 @@ class LinearRegressionSGD(Model):
                 y_pred = self.w0 + self.w1 * feature
                 error = y_true - y_pred
                 
-                self.w0 += learning_rate * error
-                self.w1 += learning_rate * error * feature
+                self.w0 = self.w0 + learning_rate * error
+                self.w1 = self.w1 + learning_rate * error * feature
 
-                y_pred = self.predict(X)
-                mse_history.append(self.mse(y, np.array(y_pred)))
-            
+                self.mse_history.append(np.mean((y - self.predict(X))**2))
+
         if plot_learning_curve:
-            self.__plot_learning_curve(mse_history, epochs)
+            self.__plot_learning_curve()
 
-    def mse(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
-        """Calculates the mean squared error between the predicted and actual values.
-
-        Args:
-            y_true (np.ndarray): the actual values.
-            y_pred (np.ndarray): the predicted values.
-
-        Returns:
-            float: the mean squared error between the predicted and actual values.
-        """
-        mse = np.mean((y_true - y_pred)**2)
-        return mse
     
-    def __plot_learning_curve(self, mse_history: List[float], epochs: int):
+    def __plot_learning_curve(self):
         
         """Plota a curva de aprendizado invertida para mostrar a parte estável na parte inferior.
         
         Args:
             mse_history (List[float]): List of MSE values recorded during training.
         """
-        plt.plot(mse_history)
+        plt.plot(self.mse_history)
         plt.xlabel("Atualização dos pesos")
         plt.ylabel("MSE")
-        plt.title("Curva de Aprendizado")
-        plt.gca().invert_yaxis()  
+        plt.title("Curva de Aprendizado")  
         plt.show()
