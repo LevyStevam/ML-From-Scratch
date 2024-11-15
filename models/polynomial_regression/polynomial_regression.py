@@ -2,7 +2,7 @@ import numpy as np
 from typing import List
 
 from models.model import Model
-from sklearn.preprocessing import MinMaxScaler
+from models.normalizer import Normalizer
 
 
 class PolynomialRegression(Model):
@@ -11,8 +11,8 @@ class PolynomialRegression(Model):
     def __init__(self, polynomial_degree: int):
         self.w = []
         self.polynomial_degree = polynomial_degree
-        self.scaler = MinMaxScaler()
-        pass
+        self.scaler_X = Normalizer()
+        self.scaler_y = Normalizer()
     
     def predict(self, input_array: np.ndarray, **kwargs) -> List[str]:
         """Returns the model's prediction for the given input.
@@ -25,11 +25,15 @@ class PolynomialRegression(Model):
             List[float]: the predicted output for each input.
         """
 
-        input_array = self.scaler.transform(input_array)  
+        if input_array.ndim == 1:
+            input_array = input_array.reshape(-1, 1)
+
+        input_array = self.scaler_X.transform(input_array)
         input_array = self.__transform_columns(input_array)
 
         input_array = np.c_[np.ones(input_array.shape[0]), input_array]
         predictions = input_array @ self.w 
+        predictions = self.scaler_y.inverse_transform(predictions)
          
         return predictions.flatten().tolist()
 
@@ -44,12 +48,37 @@ class PolynomialRegression(Model):
         """
         y = y.reshape(-1,1)
         
-        X = self.scaler.fit_transform(X)
+        if X.ndim == 1:  
+            X = X.reshape(-1, 1)
+        
+        X = self.scaler_X.fit_transform(X)
+        y = self.scaler_y.fit_transform(y)
         X = self.__transform_columns(X)
 
         X = np.c_[np.ones(X.shape[0]), X]
 
         self.w = np.linalg.pinv(X.T @ X) @ X.T @ y
+        return
+    
+    def fit_l2(self, X: np.ndarray, y: np.ndarray, lambda_reg: float = 0.01):
+        """Trains the model using L2 regularization (ridge regression).
+
+        Args:
+            X (np.ndarray): the training data inputs.
+            y (np.ndarray): the training data outputs.
+        """
+        y = y.reshape(-1, 1)
+        
+        X = self.scaler_X.fit_transform(X)
+        y = self.scaler_y.fit_transform(y)
+        X = self.__transform_columns(X)
+
+        X = np.c_[np.ones(X.shape[0]), X]
+
+        I = np.eye(X.shape[1])
+        I[0, 0] = 0
+        
+        self.w = np.linalg.pinv(X.T @ X + lambda_reg * I) @ X.T @ y
         return
 
     def __transform_columns(self, X: np.ndarray):
@@ -62,9 +91,8 @@ class PolynomialRegression(Model):
             np.ndarray: the transformed matrix.
         """
 
-        transformed_columns = [X]  
+        transformed_columns = [X] 
         for degree in range(2, self.polynomial_degree + 1):  
             transformed_columns.append(np.power(X, degree))
-        
         return np.hstack(transformed_columns)
         
