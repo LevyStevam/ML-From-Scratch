@@ -1,4 +1,5 @@
-import numpy as np 
+import numpy as np
+from ..normalizer import Normalizer
 
 class LogisticRegression:
     """A simple logistic regression model.
@@ -6,6 +7,8 @@ class LogisticRegression:
     def __init__(self):
         """Initializes the model with the given parameters.
         """
+        self.scaler_X = Normalizer()
+        self.scaler_y = Normalizer()
 
     def sigmoid(self, z):
         """Returns the sigmoid of the given value.
@@ -28,10 +31,12 @@ class LogisticRegression:
         Returns:
             list: the predicted output for each input.
         """
+        X = self.scaler_X.transform(X)
         X = np.hstack((np.ones((X.shape[0], 1)), X))
         
         z = np.dot(X, self.w)
-        predictions = self.sigmoid(z)
+        probabilities = self.sigmoid(z)
+        predictions = (probabilities >= 0.5).astype(int)
         return predictions.tolist()
     
     def fit(self, X: np.ndarray, y: np.ndarray, epochs: int, learning_rate: float):
@@ -43,6 +48,7 @@ class LogisticRegression:
             epochs (int): the number of epochs to train the model.
             learning_rate (float): the learning rate for the gradient descent algorithm.
         """
+        X = self.scaler_X.fit_transform(X)
         X = np.hstack((np.ones((X.shape[0], 1)), X))
         N, d = X.shape
         self.w = np.zeros(d)
